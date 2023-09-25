@@ -1,0 +1,8 @@
+runpod
+imageio[ffmpeg]==2.31.1
+safetensors==0.3.2
+transformers==4.30.2
+accelerate==0.20.3
+xformers==0.0.20
+diffusers==0.20.0
+huggingface-hub
