@@ -1,3 +1,5 @@
+models/stable-diffusion-xl-base-1.0/sd_xl_base_1.0.safetensors
+models/stable-diffusion-xl-refiner-1.0/sd_xl_refiner_1.0.safetensors
 models/stable-diffusion-xl-base-1.0/text_encoder/model.fp16.safetensors
 models/stable-diffusion-xl-base-1.0/text_encoder_2/model.fp16.safetensors
 models/stable-diffusion-xl-base-1.0/unet/diffusion_pytorch_model.fp16.safetensors
@@ -7,6 +9,4 @@ models/stable-diffusion-xl-base-1.0/vae_decoder/openvino_model.bin
 models/stable-diffusion-xl-base-1.0/vae_decoder/openvino_model.xml
 models/stable-diffusion-xl-base-1.0/vae_encoder/openvino_model.bin
 models/stable-diffusion-xl-base-1.0/vae_encoder/openvino_model.xml
-models/stable-diffusion-xl-base-1.0/sd_xl_base_1.0.safetensors
 models/stable-diffusion-xl-refiner-1.0/unet/diffusion_pytorch_model.fp16.safetensors
-models/stable-diffusion-xl-refiner-1.0/sd_xl_refiner_1.0.safetensors
