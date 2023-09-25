@@ -47,11 +47,14 @@ If you don't have a GPU, you can modify and test the code on [Google Colab](http
 # Install dependencies
 pip install -r requirements.txt
 
-# Download model
+# Download models
 python script/download.py
 
-# Run inference
-python script/inference_util.py
+# Edit (or not) config to customize your inference
+edit preset_prompts.json if your want to customize your prompt
+
+# Run inference test
+python inference_util.py
 
 # Run server.py local test
 python server.py
