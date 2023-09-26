@@ -11,7 +11,7 @@ from safetensors import safe_open
 
 def save_image(image: PIL.Image):
     output_video_path = tempfile.NamedTemporaryFile(suffix=".jpg").name
-    image.save(output_video_path, "JPEG", quality=95, optimize=True, progressive=True)
+    image.save(output_video_path, "JPEG", quality=100, optimize=True, progressive=True)
     return output_video_path
 
 
@@ -32,7 +32,7 @@ class SDXL:
             variant="fp16",
         ).to("cuda")
         # Define what % of steps to be run on each experts (80/20) here
-        self.high_noise_frac = 0.9
+        self.high_noise_frac = 0.8
 
         self.person_prompts = ["boy", "girl", "man", "woman", "person", "eye", "face"]
         with open("preset_prompts.json", "r") as f:
@@ -41,6 +41,7 @@ class SDXL:
     def _update_model(self, model_type):
         if model_type == "Person":
             # !TODO, update to specific model for person here
+            self.base.load_lora_weights("./nudify_xl.safetensors")
             pass
         elif model_type == "Scene":
             # !TODO, update to specific model for scene here
@@ -102,7 +103,7 @@ if __name__ == "__main__":
     # test code
     model = SDXL()
 
-    fixed_seed = 648536492#torch.randint(0, 1000000000, (1,)).item()
+    fixed_seed = 253087639#torch.randint(0, 1000000000, (1,)).item()
     print("current seed: {}".format(fixed_seed))
 
     import json
@@ -112,10 +113,5 @@ if __name__ == "__main__":
 
     time_start = time.time()
     res_1 = model.inference(prompt=test_input["prompt"], steps=test_input["steps"], width=test_input["width"], height=test_input["height"], seed=fixed_seed)
-    print("quick inference time: {}".format(time.time() - time_start))
+    print("Inference time: {}".format(time.time() - time_start))
     print("Result saved to {}".format(res_1))
-
-    time_start = time.time()
-    res_2 = model.inference(prompt=test_input["prompt"], steps=40, width=960, height=1280, seed=fixed_seed)
-    print("accurate inference time: {}".format(time.time() - time_start))
-    print("Result saved to {}".format(res_2))

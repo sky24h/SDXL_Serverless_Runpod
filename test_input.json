@@ -1,8 +1,8 @@
 {
     "input": {
-        "prompt": "A beautiful white cat, looking at the viewer, sitting next to a window, sun shining through the window.",
-        "steps": 20,
-        "width": 576,
-        "height": 1024
+        "prompt": "A white cat, sitting next to a window, sun shining through the window.",
+        "steps": 40,
+        "width": 768,
+        "height": 1344
     }
 }

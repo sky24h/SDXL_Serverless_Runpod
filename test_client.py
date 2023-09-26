@@ -1,5 +1,8 @@
 import runpod
 import base64
+import json
+with open("test_input.json", "r") as f:
+    test_input = json.load(f)["input"]
 
 def decode_data(data, save_path):
     fh = open(save_path, "wb")
@@ -8,19 +11,22 @@ def decode_data(data, save_path):
 
 # Set your API key here
 runpod.api_key = ""
+assert runpod.api_key != "", "Please set your API key in test_client.py"
 
 # Set your endpoint ID here
-endpoint = runpod.Endpoint("")
-print("Waiting for response...")
+endpoint_id = ""
+assert endpoint_id != "", "Please set your endpoint ID in test_client.py"
+endpoint = runpod.Endpoint(endpoint_id)
+
+# Send the request to the endpoint
+print("Sending request...")
 run_request = endpoint.run_sync(
-    {
-        "prompt": "A beautiful white cat, looking at the viewer, sitting next to a window, sun shining through the window.",
-        "steps": 40,
-        "width": 960,
-        "height": 1280,
-    }
+    test_input
 )
 result = run_request
+print("Got response!", result)
+
+# check the status of the request, and if it's completed, save the image
 if result["status"] == "COMPLETED":
     print("Generation completed successfully!")
     print("Here's your image:")

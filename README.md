@@ -15,16 +15,12 @@ See [Usage](#Usage) below for more details.
 ### Example Result:
 Input Prompt:
 ```
-A beautiful white cat, looking at the viewer, sitting next to a window, sun shining through the window.
+A white cat, sitting next to a window, sun shining through the window.
 ```
 
-Faster Result:
-(20 steps, 1024x576, around 15 seconds on RTX 3090, 0.004$😱 on RunPod)
-![Example Result](./assets/example_result_from_648536492_fast.jpg)
-
-Better Result:
-(40 steps, 1280x960, around 25 seconds on RTX 3090, 0.007$😱 on RunPod)
-![Example Result](./assets/example_result_from_648536492_acc.jpg)
+Example Result:
+(40 steps, 1344x768, around 15 seconds on RTX 3090, 0.006$😱 on RunPod)
+![Example Result](./assets/example_result_253087639.jpg)
 
 #### Time Measurement Explanation:
 The time is measured from the moment the input prompt is sent to the moment the result image is received, including the time for all the following steps:
