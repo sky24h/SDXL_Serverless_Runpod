@@ -1,6 +1,4 @@
-# Make sure to set API key and endpoint ID before running the script.
 # SDXL_Serverless_Runpod
-
 ## 1. Introduction
 This is a serverless application that uses [Stable Diffusion XL](https://stability.ai/stable-diffusion) to run a **Text-to-Image** task on [RunPod](https://www.runpod.io/).
 
@@ -41,6 +39,8 @@ If you don't have a GPU, you can modify and test the code on [Google Colab](http
 
 <a id="Usage"></a>
 ## 3. Usage
+Make sure to set API key and endpoint ID before running the script.
+
 #### 1. Test on Local Machine
 ```
 # Install dependencies
