@@ -39,8 +39,6 @@ If you don't have a GPU, you can modify and test the code on [Google Colab](http
 
 <a id="Usage"></a>
 ## 3. Usage
-Make sure to set API key and endpoint ID before running the script.
-
 #### 1. Test on Local Machine
 ```
 # Install dependencies
