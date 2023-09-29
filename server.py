@@ -6,9 +6,11 @@ os.environ["CUDA_MODULE_LOADING"] = "LAZY"
 os.environ["SAFETENSORS_FAST_GPU"] = "1"
 import runpod
 import base64
+import signal
 from inference_util import SDXL
 
 model = SDXL()
+timeout_s = 60
 
 
 def encode_data(data_path):
@@ -17,14 +19,21 @@ def encode_data(data_path):
     return base64.b64encode(data).decode("utf-8")
 
 
+def handle_timeout(signum, frame):
+    # raise an error when timeout, so that the serverless function will be terminated to avoid extra cost
+    raise TimeoutError("Request Timeout! Please check the log for more details.")
+
+
 def text2video(job):
     job_input = job["input"]
-    prompt = job_input["prompt"]
-    steps = job_input["steps"]
-    height = job_input["height"]
-    width = job_input["width"]
+    prompt    = job_input["prompt"]
+    steps     = job_input["steps"]
+    height    = job_input["height"]
+    width     = job_input["width"]
     print("prompt is '{}'".format(prompt))
     try:
+        signal.signal(signal.SIGALRM, handle_timeout)
+        signal.alarm(timeout_s)
         if not isinstance(prompt, str):
             return {"error": "The input is not valid."}
         else:
@@ -34,6 +43,7 @@ def text2video(job):
     except Exception as e:
         print(e)
         return {"error": "Something went wrong."}
-
+    finally:
+        signal.alarm(0)
 
 runpod.serverless.start({"handler": text2video})
