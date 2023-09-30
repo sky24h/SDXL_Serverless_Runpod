@@ -7,10 +7,10 @@ os.environ["SAFETENSORS_FAST_GPU"] = "1"
 import runpod
 import base64
 import signal
-from inference_util import SDXL
+from inference_util import SDXL, check_data_format
 
 model = SDXL()
-timeout_s = 60
+timeout_s = 60 * 2
 
 
 def encode_data(data_path):
@@ -25,25 +25,30 @@ def handle_timeout(signum, frame):
 
 
 def text2video(job):
-    job_input = job["input"]
-    prompt    = job_input["prompt"]
-    steps     = job_input["steps"]
-    height    = job_input["height"]
-    width     = job_input["width"]
-    print("prompt is '{}'".format(prompt))
     try:
         signal.signal(signal.SIGALRM, handle_timeout)
         signal.alarm(timeout_s)
-        if not isinstance(prompt, str):
-            return {"error": "The input is not valid."}
-        else:
-            save_path = model.inference(prompt=prompt, steps=steps, height=height, width=width)
-            image_data = encode_data(save_path)
-            return {"filename": os.path.basename(save_path), "data": image_data}
+        job_input = job["input"]
+        job_input = check_data_format(job_input)
+        print("prompt is '{}'".format(job_input["prompt"]))
+        save_path = model.inference(
+            prompt          = job_input["prompt"],
+            steps           = job_input["steps"],
+            width           = job_input["width"],
+            height          = job_input["height"],
+            n_prompt        = job_input["n_prompt"],
+            guidance_scale  = job_input["guidance_scale"],
+            high_noise_frac = job_input["high_noise_frac"],
+            seed            = job_input["seed"],
+            base_model      = job_input["base_model"],
+            base_loras      = job_input["base_loras"],
+        )
+        image_data = encode_data(save_path)
+        return {"filename": os.path.basename(save_path), "data": image_data}
     except Exception as e:
-        print(e)
-        return {"error": "Something went wrong."}
+        return {"error": "Something went wrong, error message: {}".format(e)}
     finally:
         signal.alarm(0)
+
 
 runpod.serverless.start({"handler": text2video})

@@ -10,7 +10,6 @@
         "seed": 253087639,
         "base_model": "ORIGINAL_SDXL",
         "base_loras": {
-        "lora1": ["example_add_detail-xl.safetensors", 0.6]
         }
     }
 }

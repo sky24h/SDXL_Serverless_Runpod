@@ -1,0 +1,28 @@
+# base_model, motion_lora, base_loras should be stored in "models/DreamBooth_LoRA/"
+Person:
+  width: 768
+  height: 1344
+  base_model: "ORIGINAL_SDXL"
+  base_loras:
+    lora1:
+    - "example_add_detail-xl.safetensors"
+    - 0.6
+    # lora2:
+    # - "model_diryour_lora2.safetensors"
+    # - 0.6
+  prompt: "attractive face, clear face, clear body, (8k, RAW photo, best quality, masterpiece:1.3), (looking at viewer:1.8)"
+  n_prompt: "(deformed iris, deformed pupils, ng_deepnegative_v1_75t),(badhandv4),(bad-hands-5:1.2),(worst quality:2),(low quality:2),(normal quality:2),lowres, watermark, blurry face, ugly, bad anatomy,bad hands,normal quality,((monochrome)),((grayscale))"
+
+Default:
+  width: 1344
+  height: 768
+  base_model: "ORIGINAL_SDXL"
+  base_loras:
+    lora1:
+    - "example_add_detail-xl.safetensors"
+    - 0.6
+    # lora2:
+    # - "model_diryour_lora2.safetensors"
+    # - 0.6
+  prompt: "8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3"
+  n_prompt: "watermark, blur, haze, deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime, art, mutated hands and fingers, deformed, distorted, disfigured, poorly drawn, bad anatomy, wrong anatomy, extra limb, missing limb, floating limbs, disconnected limbs, mutation, mutated, ugly, disgusting, amputation"
