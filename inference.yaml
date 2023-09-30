@@ -4,9 +4,9 @@ Person:
   height: 1344
   base_model: "ORIGINAL_SDXL"
   base_loras:
-    lora1:
-    - "example_add_detail-xl.safetensors"
-    - 0.6
+    # lora1:
+    # - "example_add_detail-xl.safetensors"
+    # - 0.6
     # lora2:
     # - "model_diryour_lora2.safetensors"
     # - 0.6
@@ -18,9 +18,9 @@ Default:
   height: 768
   base_model: "ORIGINAL_SDXL"
   base_loras:
-    lora1:
-    - "example_add_detail-xl.safetensors"
-    - 0.6
+    # lora1:
+    # - "example_add_detail-xl.safetensors"
+    # - 0.6
     # lora2:
     # - "model_diryour_lora2.safetensors"
     # - 0.6
