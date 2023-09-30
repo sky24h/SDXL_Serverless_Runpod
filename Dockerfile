@@ -17,7 +17,7 @@ ADD models ./models
 
 # Add necessary files
 ADD inference_util.py ./
-ADD preset_prompts.json ./
+ADD inference.yaml ./
 ADD server.py ./
 
 # pip install
