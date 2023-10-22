@@ -226,7 +226,7 @@ class SDXL:
                 guidance_scale      = self.guidance_scale if guidance_scale is None else guidance_scale,
                 denoising_start     = self.high_noise_frac if high_noise_frac is None else high_noise_frac,
                 image               = image,
-                output_type         = "latent" if self.low_vram else "image",
+                output_type         = "latent" if self.low_vram else "pil",
             ).images
 
             if self.low_vram:
