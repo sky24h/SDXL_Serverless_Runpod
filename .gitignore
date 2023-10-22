@@ -32,6 +32,7 @@ MANIFEST
 *.pth
 *.ckpt
 *.ckpt
+*openvino_model.xml
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
