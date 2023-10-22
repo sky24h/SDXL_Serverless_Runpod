@@ -84,7 +84,8 @@ python test_client.py
 ![Example Result](./assets/telegram_bot_example.jpg)
 
 ## 4. TODO
-- [ ] Support custom models
+- [x] Support custom models
+- [x] Support low VRAM GPUs(8~12GB)
 - [ ] More detailed instructions
 - [ ] One-click deploy (If anyone is interested...)
 

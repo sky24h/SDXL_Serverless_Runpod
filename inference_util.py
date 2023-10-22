@@ -1,6 +1,10 @@
 import os
-import time
-import numpy as np
+# set CUDA_MODULE_LOADING=LAZY to speed up the serverless function
+os.environ["CUDA_MODULE_LOADING"] = "LAZY"
+# set SAFETENSORS_FAST_GPU=1 to speed up the serverless function
+os.environ["SAFETENSORS_FAST_GPU"] = "1"
+
+
 import tempfile
 import PIL.Image
 from diffusers import StableDiffusionXLPipeline, DiffusionPipeline
@@ -83,7 +87,7 @@ def check_data_format(job_input):
 
 class SDXL:
     def __init__(self):
-        refiner_model_path         = os.path.join(os.path.dirname(__file__), "models/stable-diffusion-xl-refiner-1.0")
+        self.refiner_model_path    = os.path.join(os.path.dirname(__file__), "models/stable-diffusion-xl-refiner-1.0")
         self.pretrained_model_path = os.path.join(os.path.dirname(__file__), "models/stable-diffusion-xl-base-1.0")
         self.model_dir             = os.path.join(os.path.dirname(__file__), "models/custom-models")
         self.inference_config      = OmegaConf.load(os.path.join(os.path.dirname(__file__), "inference.yaml"))
@@ -92,17 +96,12 @@ class SDXL:
         self.use_fp16 = True
         self.dtype    = torch.float16 if self.use_fp16 else torch.float32
         self.device   = "cuda"
+        self.low_vram = (torch.cuda.mem_get_info()[1] / 1024 / 1024 / 1024) < 10
+        print(f"GPU memory is lower than 12GB, use low_vram mode") if self.low_vram else None
 
         # load base model and refiner
         self._reload_base_model()
-        self.refiner = DiffusionPipeline.from_pretrained(
-            refiner_model_path,
-            text_encoder_2  = self.base.text_encoder_2,
-            vae             = self.base.vae,
-            torch_dtype     = torch.float16,
-            use_safetensors = True,
-            variant         = "fp16",
-        ).to(self.device)
+        self._reload_refiner()
 
         # pre-defined default params, can be changed
         self.steps           = 40
@@ -110,10 +109,35 @@ class SDXL:
         self.guidance_scale  = 5.0
         self.person_prompts  = ["boy", "girl", "man", "woman", "person", "eye", "face"]
 
-    def _reload_base_model(self):
-        self.base = StableDiffusionXLPipeline.from_pretrained(
-            self.pretrained_model_path, torch_dtype=torch.float16, variant="fp16", use_safetensors=True
-        ).to(self.device)
+    def _reload_base_model(self, base_model="ORIGINAL_SDXL"):
+        if hasattr(self, "base"):
+            # release memory if low_vram
+            self.base = self.base.to("cpu") if self.low_vram else self.base
+        if base_model == "ORIGINAL_SDXL":
+            # reload the original model
+            self.base = StableDiffusionXLPipeline.from_pretrained(
+                self.pretrained_model_path, torch_dtype = torch.float16, variant = "fp16", use_safetensors = True
+            )
+            print("Reloaded the original model.")
+        elif base_model and base_model != "":
+            # load custom model
+            self.base = load_base_model(self.base, self.model_dir, base_model, "cpu")
+            print(f"Loaded custom model: {base_model}")
+        else:
+            raise ValueError("base model must be specified")
+
+    def _reload_refiner(self):
+        if hasattr(self, "refiner"):
+            # release memory if low_vram
+            self.refiner = self.refiner.to("cpu") if self.low_vram else self.refiner
+        self.refiner = DiffusionPipeline.from_pretrained(
+            self.refiner_model_path,
+            text_encoder_2  = self.base.text_encoder_2,
+            vae             = self.base.vae,
+            torch_dtype     = torch.float16,
+            use_safetensors = True,
+            variant         = "fp16",
+        )
 
     def _get_model_params(self, prompt, width, height, n_prompt, base_model, base_loras):
         prompt = prompt[:-1] if prompt[-1] == "." else prompt
@@ -145,16 +169,7 @@ class SDXL:
 
     def _update_model(self, base_model, base_loras):
         # update model
-        if base_model == "ORIGINAL_SDXL":
-            # reload the original model
-            self._reload_base_model()
-            print("Reloaded the original model.")
-        elif base_model and base_model != "":
-            # load custom model
-            self.base = load_base_model(self.base, self.model_dir, base_model, self.device)
-            print(f"Loaded custom model: {base_model}")
-        else:
-            raise ValueError("base model must be specified")
+        self._reload_base_model(base_model)
 
         # apply lora
         if base_loras:
@@ -189,25 +204,41 @@ class SDXL:
         print(f"sampling {prompt} ...")
         print(f"negative prompt: {n_prompt}")
         # run both experts
-        image = self.base(
-            prompt              = prompt,
-            negative_prompt     = n_prompt,
-            num_inference_steps = self.steps if steps is None else steps,
-            height              = height,
-            width               = width,
-            guidance_scale      = self.guidance_scale if guidance_scale is None else guidance_scale,
-            denoising_end       = self.high_noise_frac if high_noise_frac is None else high_noise_frac,
-            output_type         = "latent",
-        ).images
+        with torch.no_grad():
+            self.base = self.base.to(self.device)
+            image = self.base(
+                prompt              = prompt,
+                negative_prompt     = n_prompt,
+                num_inference_steps = self.steps if steps is None else steps,
+                height              = height,
+                width               = width,
+                guidance_scale      = self.guidance_scale if guidance_scale is None else guidance_scale,
+                denoising_end       = self.high_noise_frac if high_noise_frac is None else high_noise_frac,
+                output_type         = "latent",
+            ).images
+            self.base = self.base.to("cpu") if self.low_vram else self.base # move base model to cpu to save gpu memory
 
-        image = self.refiner(
-            prompt              = prompt,
-            negative_prompt     = n_prompt,
-            num_inference_steps = self.steps if steps is None else steps,
-            guidance_scale      = self.guidance_scale if guidance_scale is None else guidance_scale,
-            denoising_start     = self.high_noise_frac if high_noise_frac is None else high_noise_frac,
-            image               = image,
-        ).images[0]
+            self.refiner = self.refiner.to(self.device)
+            image = self.refiner(
+                prompt              = prompt,
+                negative_prompt     = n_prompt,
+                num_inference_steps = self.steps if steps is None else steps,
+                guidance_scale      = self.guidance_scale if guidance_scale is None else guidance_scale,
+                denoising_start     = self.high_noise_frac if high_noise_frac is None else high_noise_frac,
+                image               = image,
+                output_type         = "latent" if self.low_vram else "image",
+            ).images
+
+            if self.low_vram:
+                # move refiner model to cpu to save gpu memory, except for vae which is needed for decoding
+                self.refiner     = self.refiner.to("cpu")
+                self.refiner.vae = self.refiner.vae.to(self.device)
+                image            = self.refiner.vae.decode(image / self.refiner.vae.config.scaling_factor, return_dict=False)[0]
+                self.refiner.vae = self.refiner.vae.to("cpu")
+                image = self.refiner.image_processor.postprocess(image)[0]
+
+            else:
+                image = image[0]
 
         return save_image(image)
 
@@ -238,15 +269,15 @@ if __name__ == "__main__":
 
     # better config
     save_path = sdxl.inference(
-        prompt         = test_input["prompt"],
-        steps          = test_input["steps"],
-        width          = test_input["width"],
-        height         = test_input["height"],
-        n_prompt       = test_input["n_prompt"],
-        guidance_scale = test_input["guidance_scale"],
-        high_noise_frac= test_input["high_noise_frac"],
-        seed           = test_input["seed"],
-        base_model     = test_input["base_model"],
-        base_loras     = test_input["base_loras"],
+        prompt          = test_input["prompt"],
+        steps           = test_input["steps"],
+        width           = test_input["width"],
+        height          = test_input["height"],
+        n_prompt        = test_input["n_prompt"],
+        guidance_scale  = test_input["guidance_scale"],
+        high_noise_frac = test_input["high_noise_frac"],
+        seed            = test_input["seed"],
+        base_model      = test_input["base_model"],
+        base_loras      = test_input["base_loras"],
     )
     print("Result of custom config is saved to: {}\n".format(save_path))
