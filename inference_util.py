@@ -96,7 +96,7 @@ class SDXL:
         self.use_fp16 = True
         self.dtype    = torch.float16 if self.use_fp16 else torch.float32
         self.device   = "cuda"
-        self.low_vram = (torch.cuda.mem_get_info()[1] / 1024 / 1024 / 1024) < 10
+        self.low_vram = (torch.cuda.mem_get_info()[1] / 1024 / 1024 / 1024) < 12
         print(f"GPU memory is lower than 12GB, use low_vram mode") if self.low_vram else None
 
         # load base model and refiner
