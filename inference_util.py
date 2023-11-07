@@ -197,6 +197,10 @@ class SDXL:
         )
 
         self._update_model(base_model, base_loras)
+        # if lora is applied, the refiner model can not be used
+        if base_loras:
+            high_noise_frac = 1.0
+            print("the refiner model can not be used when lora is applied, set high_noise_frac to 1.0")
 
         torch.seed()
         torch.manual_seed(seed if seed is not None else torch.randint(0, 1000000000, (1,)).item())
