@@ -46,13 +46,13 @@ def load_base_model(pipeline, model_dir, base_model, device):
     # del converted_unet
 
     # text_model
-    info = pipeline.text_encoder.load_state_dict(te1_sd)
+    info = pipeline.text_encoder.load_state_dict(te1_sd, strict=False)
     infos.append(info)
     del te1_sd
 
     # text_model_2
     converted_sd, logit_scale = convert_sdxl_text_encoder_2_checkpoint(te2_sd, max_length=77)
-    info = pipeline.text_encoder_2.load_state_dict(converted_sd)
+    info = pipeline.text_encoder_2.load_state_dict(converted_sd, strict=False)
     infos.append(info)
     del converted_sd
 
