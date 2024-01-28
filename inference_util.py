@@ -69,7 +69,7 @@ def check_data_format(job_input):
                 raise ValueError("base_loras values must be lists of length 2.")
             if not isinstance(lora_params[0], str):
                 raise ValueError("base_loras values must be lists of strings.")
-            if not isinstance(lora_params[1], float):
+            if (not isinstance(lora_params[1], float)) and (not isinstance(lora_params[1], int)):
                 raise ValueError("base_loras values must be lists of floats.")
     return {
         "prompt"         : prompt,

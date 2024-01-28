@@ -1,9 +1,12 @@
-runpod
+runpod==1.5.3
 imageio[ffmpeg]==2.31.1
+imageio-ffmpeg==0.4.9
 omegaconf==2.3.0
 safetensors==0.3.2
+einops==0.6.1
 transformers==4.30.2
 accelerate==0.20.3
 xformers==0.0.20
 diffusers==0.20.0
-huggingface-hub
+gdown==5.0.1
+huggingface-hub==0.19.4
